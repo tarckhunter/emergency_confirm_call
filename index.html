@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตำแหน่งฉุกเฉิน - ตัวเลขใหญ่</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #0b1e30; /* พื้นหลังสีเข้ม */
+            color: #fff;
+            text-align: center;
+        }
+        .container {
+            max-width: 450px;
+            margin: 0 auto;
+            background-color: #1a3044;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+        h2 {
+            color: #ffeb3b; /* สีเหลือง */
+            margin-bottom: 25px;
+        }
+
+        /* --- ส่วนแสดงผลพิกัดใหญ่ --- */
+        .coord-display {
+            background-color: #0f273b;
+            padding: 15px 10px;
+            border-radius: 8px;
+            border: 2px solid #5d6d7e;
+            margin-bottom: 15px;
+        }
+        .coord-label {
+            font-size: 14px;
+            color: #bbb;
+            display: block;
+        }
+        .coord-value {
+            font-size: 32px; /* **ตัวเลขใหญ่มาก** */
+            font-weight: bold;
+            color: #81c784; /* สีเขียวอ่อน */
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* --- ข้อความสำหรับแจ้งตำรวจ --- */
+        #police-message-box {
+            margin-top: 25px;
+            padding: 15px;
+            border: 2px solid #F44336; /* กรอบสีแดงเตือน */
+            border-radius: 8px;
+            min-height: 50px;
+            text-align: left;
+            background-color: #2b1f24;
+            word-wrap: break-word;
+            font-size: 16px;
+        }
+        .police-message-text {
+            font-weight: bold;
+            color: #ffeb3b; /* ข้อความสำคัญเป็นสีเหลือง */
+        }
+        #address-detail {
+            font-size: 14px;
+            color: #ccc;
+            margin-top: 5px;
+        }
+        
+        /* --- ปุ่มหลัก (Buttons) --- */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+        #btn-locate {
+            background-color: #4CAF50; /* สีเขียว */
+            color: white;
+            margin-top: 15px;
+        }
+        
+        #btn-call {
+            background-color: #F44336; /* สีแดงฉุกเฉิน */
+            color: white;
+            font-size: 24px;
+            padding: 20px 10px;
+        }
+        #btn-copy {
+            background-color: #2196F3; /* สีน้ำเงิน */
+            color: white;
+            font-size: 16px;
+            padding: 10px;
+        }
+        .status-text {
+            color: #ffeb3b;
+            margin-bottom: 15px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🚨 เครื่องมือฉุกเฉิน 191</h2>
+        
+        <span id="status-display" class="status-text">สถานะ: กดค้นหาตำแหน่งเพื่อเริ่ม</span>
+
+        <div class="coord-display">
+            <span class="coord-label">ละติจูด (Latitude)</span>
+            <span id="lat-value" class="coord-value">--.------</span>
+        </div>
+        <div class="coord-display">
+            <span class="coord-label">ลองจิจูด (Longitude)</span>
+            <span id="lon-value" class="coord-value">--.------</span>
+        </div>
+
+        <button id="btn-copy" class="btn">
+            📋 คัดลอกพิกัดสำหรับแจ้งตำรวจ
+        </button>
+
+        <div id="police-message-box">
+             <span class="police-message-text">ข้อความสำหรับแจ้ง 191 (ตัวอย่าง):</span>
+             <p id="address-detail">รอการค้นหาตำแหน่ง...</p>
+        </div>
+
+        <button id="btn-locate" class="btn">
+            📍 ค้นหาตำแหน่งปัจจุบัน
+        </button>
+        
+        <a id="btn-call" class="btn" href="#" onclick="return confirmCall(event)">
+            📞 โทร 191 ทันที
+        </a>
+        </div>
+
+    <script>
+        document.getElementById('btn-locate').addEventListener('click', getLocation);
+        document.getElementById('btn-copy').addEventListener('click', copyCoords);
+
+        let currentLat = null;
+        let currentLon = null;
+
+        /**
+         * ฟังก์ชันสำหรับการยืนยันการโทร 191
+         */
+        function confirmCall(event) {
+            // ป้องกันไม่ให้ลิงก์ทำงานทันที
+            event.preventDefault(); 
+            
+            // แสดงกล่องยืนยัน
+            const confirmed = confirm("คุณแน่ใจหรือไม่ว่าต้องการโทร 191 เพื่อแจ้งเหตุด่วนฉุกเฉิน? (เฉพาะเหตุจริงเท่านั้น)");
+            
+            if (confirmed) {
+                // ถ้ากด 'ตกลง' (OK) ให้ทำการโทรออก
+                window.location.href = "tel:191";
+            }
+            // ถ้ากด 'ยกเลิก' (Cancel) จะไม่มีอะไรเกิดขึ้น
+        }
+
+
+        function getLocation() {
+            const statusDisplay = document.getElementById('status-display');
+            const latValue = document.getElementById('lat-value');
+            const lonValue = document.getElementById('lon-value');
+            const addressDetail = document.getElementById('address-detail');
+            
+            statusDisplay.textContent = 'กำลังค้นหาตำแหน่ง... โปรดอนุญาตการเข้าถึง';
+            latValue.textContent = '--.------';
+            lonValue.textContent = '--.------';
+            addressDetail.textContent = 'กำลังแปลงพิกัดเป็นที่อยู่...';
+
+            if (!navigator.geolocation) {
+                statusDisplay.textContent = '❌ เบราว์เซอร์ไม่รองรับ Geolocation';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(success, error, {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            });
+
+            function success(position) {
+                currentLat = position.coords.latitude.toFixed(6); // ปรับทศนิยม 6 ตำแหน่ง
+                currentLon = position.coords.longitude.toFixed(6);
+                
+                statusDisplay.textContent = '✅ พบตำแหน่งแล้ว';
+                latValue.textContent = currentLat;
+                lonValue.textContent = currentLon;
+                
+                // OpenStreetMap Geocoding
+                const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLat}&lon=${currentLon}&zoom=18&addressdetails=1&accept-language=th`;
+                
+                fetch(reverseGeocodeUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        let addressText = "ไม่พบข้อมูลที่อยู่โดยละเอียด";
+                        if (data && data.display_name) {
+                            addressText = data.display_name;
+                        }
+                        
+                        addressDetail.innerHTML = `
+                            **ที่อยู่โดยประมาณ:** ${addressText}<br>
+                            **ข้อความสำหรับแจ้ง 191:** "ตอนนี้ดิฉัน/ผม อยู่ที่ **${addressText}** พิกัดคือ **Lat: ${currentLat}, Lon: ${currentLon}** ค่ะ/ครับ"
+                        `;
+                    })
+                    .catch(e => {
+                        addressDetail.innerHTML = `
+                            **ที่อยู่โดยประมาณ:** (ไม่สามารถระบุได้ชัดเจน)<br>
+                            **ข้อความสำหรับแจ้ง 191:** "ตอนนี้ดิฉัน/ผม ไม่สามารถระบุที่อยู่ชัดเจนได้ กรุณาบันทึกพิกัดค่ะ/ครับ: **Lat: ${currentLat}, Lon: ${currentLon}**"
+                        `;
+                    });
+            }
+
+            function error(err) {
+                let errorMessage = '';
+                if (err.code === err.PERMISSION_DENIED) {
+                    errorMessage = "คุณไม่ได้อนุญาตให้เข้าถึงตำแหน่ง";
+                } else if (err.code === err.POSITION_UNAVAILABLE) {
+                    errorMessage = "ตำแหน่งปัจจุบันไม่พร้อมใช้งาน";
+                } else if (err.code === err.TIMEOUT) {
+                    errorMessage = "การค้นหาตำแหน่งหมดเวลา";
+                } else {
+                    errorMessage = `ข้อผิดพลาดที่ไม่ทราบสาเหตุ (${err.message})`;
+                }
+                
+                statusDisplay.textContent = `🚫 ข้อผิดพลาด: ${errorMessage}`;
+                addressDetail.textContent = 'กรุณาลองกดปุ่มค้นหาตำแหน่งใหม่อีกครั้ง';
+            }
+        }
+        
+        function copyCoords() {
+            if (currentLat && currentLon) {
+                const textToCopy = `พิกัด: Lat ${currentLat}, Lon ${currentLon}`;
+                
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        alert(`📋 คัดลอกพิกัดแล้ว: ${textToCopy}`);
+                    }).catch(err => {
+                        // Fallback: ใช้ prompt ให้ผู้ใช้คัดลอกด้วยตนเอง
+                        window.prompt("ไม่สามารถคัดลอกอัตโนมัติได้ กรุณาคัดลอกข้อความด้านล่าง:", textToCopy);
+                    });
+                } else {
+                    window.prompt("เบราว์เซอร์ไม่รองรับการคัดลอกอัตโนมัติ กรุณาคัดลอกข้อความด้านล่าง:", textToCopy);
+                }
+            } else {
+                alert('โปรดกด "📍 ค้นหาตำแหน่งปัจจุบัน" ก่อน');
+            }
+        }
+    </script>
+</body>
+</html>
