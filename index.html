@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตำแหน่งฉุกเฉิน - ตัวเลขใหญ่</title>
+    <title>เครื่องมือฉุกเฉิน 3-in-1</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #0b1e30; /* พื้นหลังสีเข้ม */
+            background-color: #0b1e30;
             color: #fff;
             text-align: center;
         }
@@ -22,7 +22,7 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
         }
         h2 {
-            color: #ffeb3b; /* สีเหลือง */
+            color: #ffeb3b;
             margin-bottom: 25px;
         }
 
@@ -40,33 +40,30 @@
             display: block;
         }
         .coord-value {
-            font-size: 32px; /* **ตัวเลขใหญ่มาก** */
+            font-size: 32px;
             font-weight: bold;
-            color: #81c784; /* สีเขียวอ่อน */
+            color: #81c784;
             display: block;
             margin-top: 5px;
         }
 
-        /* --- ข้อความสำหรับแจ้งตำรวจ --- */
-        #police-message-box {
+        /* --- กล่องข้อความและรูปภาพ --- */
+        #police-message-box, #photo-preview-box {
             margin-top: 25px;
             padding: 15px;
-            border: 2px solid #F44336; /* กรอบสีแดงเตือน */
+            border: 2px solid #F44336;
             border-radius: 8px;
             min-height: 50px;
-            text-align: left;
+            text-align: center;
             background-color: #2b1f24;
             word-wrap: break-word;
             font-size: 16px;
         }
-        .police-message-text {
-            font-weight: bold;
-            color: #ffeb3b; /* ข้อความสำคัญเป็นสีเหลือง */
-        }
-        #address-detail {
-            font-size: 14px;
-            color: #ccc;
-            margin-top: 5px;
+        #photo-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 5px;
         }
         
         /* --- ปุ่มหลัก (Buttons) --- */
@@ -84,34 +81,18 @@
             text-align: center;
             transition: background-color 0.2s;
         }
-        #btn-locate {
-            background-color: #4CAF50; /* สีเขียว */
-            color: white;
-            margin-top: 15px;
-        }
+        #btn-locate { background-color: #4CAF50; color: white; margin-top: 15px; }
+        #btn-camera { background-color: #9c27b0; color: white; } /* ปุ่มกล้องสีม่วง */
+        #btn-call { background-color: #F44336; color: white; font-size: 24px; padding: 20px 10px; }
+        #btn-copy { background-color: #2196F3; color: white; font-size: 16px; padding: 10px; }
+        #btn-download { background-color: #00bcd4; color: white; display: none; margin-top: 10px; font-size: 16px; padding: 10px; }
         
-        #btn-call {
-            background-color: #F44336; /* สีแดงฉุกเฉิน */
-            color: white;
-            font-size: 24px;
-            padding: 20px 10px;
-        }
-        #btn-copy {
-            background-color: #2196F3; /* สีน้ำเงิน */
-            color: white;
-            font-size: 16px;
-            padding: 10px;
-        }
-        .status-text {
-            color: #ffeb3b;
-            margin-bottom: 15px;
-            display: block;
-        }
+        .status-text { color: #ffeb3b; margin-bottom: 15px; display: block; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🚨 เครื่องมือฉุกเฉิน 191</h2>
+        <h2>🚨 เครื่องมือฉุกเฉิน 3-in-1</h2>
         
         <span id="status-display" class="status-text">สถานะ: กดค้นหาตำแหน่งเพื่อเริ่ม</span>
 
@@ -129,44 +110,113 @@
         </button>
 
         <div id="police-message-box">
-             <span class="police-message-text">ข้อความสำหรับแจ้ง 191 (ตัวอย่าง):</span>
+             <span class="police-message-text">ข้อความสำหรับแจ้ง 191:</span>
              <p id="address-detail">รอการค้นหาตำแหน่ง...</p>
         </div>
 
         <button id="btn-locate" class="btn">
             📍 ค้นหาตำแหน่งปัจจุบัน
         </button>
+
+        <button id="btn-camera" class="btn">
+            📸 ถ่ายรูปประกอบเหตุการณ์
+        </button>
+        <input type="file" id="cameraInput" accept="image/*" capture="camera" style="display: none;">
         
+        <div id="photo-preview-box">
+             <span id="photo-status">ยังไม่มีภาพถ่าย</span>
+             <img id="photo-preview" src="" alt="ภาพถ่ายหลักฐาน" style="display: none;">
+             <a id="btn-download" class="btn" href="#" download="emergency_photo.jpg">
+                 ⬇️ ดาวน์โหลดภาพ (เซฟลงเครื่อง)
+             </a>
+        </div>
         <a id="btn-call" class="btn" href="#" onclick="return confirmCall(event)">
             📞 โทร 191 ทันที
         </a>
-        </div>
+
+    </div>
 
     <script>
         document.getElementById('btn-locate').addEventListener('click', getLocation);
         document.getElementById('btn-copy').addEventListener('click', copyCoords);
+        document.getElementById('btn-camera').addEventListener('click', triggerCamera);
+        document.getElementById('cameraInput').addEventListener('change', handlePhotoCapture);
+        document.getElementById('btn-download').addEventListener('click', handleDownload);
+
 
         let currentLat = null;
         let currentLon = null;
+        let capturedFile = null;
 
-        /**
-         * ฟังก์ชันสำหรับการยืนยันการโทร 191
-         */
+        /* --- 1. ฟังก์ชันโทร 191 --- */
         function confirmCall(event) {
-            // ป้องกันไม่ให้ลิงก์ทำงานทันที
             event.preventDefault(); 
-            
-            // แสดงกล่องยืนยัน
             const confirmed = confirm("คุณแน่ใจหรือไม่ว่าต้องการโทร 191 เพื่อแจ้งเหตุด่วนฉุกเฉิน? (เฉพาะเหตุจริงเท่านั้น)");
-            
             if (confirmed) {
-                // ถ้ากด 'ตกลง' (OK) ให้ทำการโทรออก
                 window.location.href = "tel:191";
             }
-            // ถ้ากด 'ยกเลิก' (Cancel) จะไม่มีอะไรเกิดขึ้น
+        }
+        /* --- 2. ฟังก์ชันตำแหน่ง --- (โค้ดเดิม) */
+        function getLocation() { /* ... โค้ดเดิม ... */ }
+        function copyCoords() { /* ... โค้ดเดิม ... */ }
+        
+        /* --- 3. ฟังก์ชันกล้อง/รูปภาพ --- */
+        function triggerCamera() {
+            // คลิก input type="file" ที่ถูกซ่อนไว้ เพื่อเปิดกล้อง
+            document.getElementById('cameraInput').click();
+        }
+
+        function handlePhotoCapture(event) {
+            const file = event.target.files[0];
+            const photoPreview = document.getElementById('photo-preview');
+            const photoStatus = document.getElementById('photo-status');
+            const btnDownload = document.getElementById('btn-download');
+
+            if (file) {
+                capturedFile = file;
+                const url = URL.createObjectURL(file);
+                
+                photoPreview.src = url;
+                photoPreview.style.display = 'block';
+                photoStatus.textContent = '✅ ถ่ายภาพสำเร็จแล้ว';
+
+                // เตรียมปุ่มดาวน์โหลด
+                btnDownload.style.display = 'block';
+                
+            } else {
+                photoPreview.style.display = 'none';
+                btnDownload.style.display = 'none';
+                photoStatus.textContent = '❌ ยกเลิกการถ่ายภาพ';
+                capturedFile = null;
+            }
+        }
+
+        function handleDownload(event) {
+            if (capturedFile) {
+                // ใช้ URL.createObjectURL อีกครั้ง หรือใช้ตัวเดิมเพื่อสร้างลิงก์ดาวน์โหลด
+                const url = URL.createObjectURL(capturedFile);
+                event.currentTarget.href = url;
+                
+                // สร้างชื่อไฟล์ที่มีวันที่/เวลา เพื่อให้ไฟล์ไม่ซ้ำกัน
+                const now = new Date();
+                const filename = `Emergency_${now.getFullYear()}${now.getMonth()+1}${now.getDate()}_${now.getHours()}${now.getMinutes()}${now.getSeconds()}.jpg`;
+                event.currentTarget.setAttribute('download', filename);
+
+                // เบราว์เซอร์จะจัดการการดาวน์โหลดเอง
+                alert('กำลังดาวน์โหลดภาพไปยังโฟลเดอร์ดาวน์โหลด (Downloads)');
+                // ไม่ต้องเรียก event.preventDefault(); เพราะต้องการให้ลิงก์ทำงาน
+            } else {
+                event.preventDefault(); // ป้องกันการดาวน์โหลดถ้าไม่มีไฟล์
+                alert('ไม่มีภาพให้ดาวน์โหลด! โปรดถ่ายภาพก่อน');
+            }
         }
 
 
+        // *******************************************************************
+        // โค้ดเก่าที่จำเป็นต้องมีเพื่อให้ฟังก์ชันทำงานได้ครบถ้วน
+        // (ผมขอใช้ JavaScript Template String ในการรวมโค้ดให้สั้นลง แต่ฟังก์ชันการทำงานเหมือนเดิม)
+        // *******************************************************************
+        
         function getLocation() {
             const statusDisplay = document.getElementById('status-display');
             const latValue = document.getElementById('lat-value');
@@ -190,7 +240,7 @@
             });
 
             function success(position) {
-                currentLat = position.coords.latitude.toFixed(6); // ปรับทศนิยม 6 ตำแหน่ง
+                currentLat = position.coords.latitude.toFixed(6);
                 currentLon = position.coords.longitude.toFixed(6);
                 
                 statusDisplay.textContent = '✅ พบตำแหน่งแล้ว';
@@ -246,7 +296,6 @@
                     navigator.clipboard.writeText(textToCopy).then(() => {
                         alert(`📋 คัดลอกพิกัดแล้ว: ${textToCopy}`);
                     }).catch(err => {
-                        // Fallback: ใช้ prompt ให้ผู้ใช้คัดลอกด้วยตนเอง
                         window.prompt("ไม่สามารถคัดลอกอัตโนมัติได้ กรุณาคัดลอกข้อความด้านล่าง:", textToCopy);
                     });
                 } else {
