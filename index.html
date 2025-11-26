@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เครื่องมือฉุกเฉิน 3-in-1</title>
+    <title>เครื่องมือฉุกเฉิน 3-in-1 (หลายภาพ)</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -59,11 +59,20 @@
             word-wrap: break-word;
             font-size: 16px;
         }
-        #photo-preview {
-            max-width: 100%;
-            max-height: 200px;
+        
+        #photo-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
             margin-top: 10px;
+        }
+        .thumbnail {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
             border-radius: 5px;
+            border: 2px solid #fff;
         }
         
         /* --- ปุ่มหลัก (Buttons) --- */
@@ -85,7 +94,7 @@
         #btn-camera { background-color: #9c27b0; color: white; } /* ปุ่มกล้องสีม่วง */
         #btn-call { background-color: #F44336; color: white; font-size: 24px; padding: 20px 10px; }
         #btn-copy { background-color: #2196F3; color: white; font-size: 16px; padding: 10px; }
-        #btn-download { background-color: #00bcd4; color: white; display: none; margin-top: 10px; font-size: 16px; padding: 10px; }
+        #btn-download { background-color: #00bcd4; color: white; display: none; margin-top: 10px; font-size: 18px; padding: 15px; }
         
         .status-text { color: #ffeb3b; margin-bottom: 15px; display: block; }
     </style>
@@ -119,15 +128,16 @@
         </button>
 
         <button id="btn-camera" class="btn">
-            📸 ถ่ายรูปประกอบเหตุการณ์
+            📸 ถ่ายรูปประกอบเหตุการณ์ (กดซ้ำเพื่อเพิ่มภาพ)
         </button>
         <input type="file" id="cameraInput" accept="image/*" capture="camera" style="display: none;">
         
         <div id="photo-preview-box">
              <span id="photo-status">ยังไม่มีภาพถ่าย</span>
-             <img id="photo-preview" src="" alt="ภาพถ่ายหลักฐาน" style="display: none;">
-             <a id="btn-download" class="btn" href="#" download="emergency_photo.jpg">
-                 ⬇️ ดาวน์โหลดภาพ (เซฟลงเครื่อง)
+             <div id="photo-gallery"></div> 
+
+             <a id="btn-download" class="btn" href="#" style="display: none;" onclick="return handleDownload(event)">
+                 ⬇️ ดาวน์โหลดภาพทั้งหมด (<span id="file-count">0</span> ไฟล์)
              </a>
         </div>
         <a id="btn-call" class="btn" href="#" onclick="return confirmCall(event)">
@@ -141,12 +151,10 @@
         document.getElementById('btn-copy').addEventListener('click', copyCoords);
         document.getElementById('btn-camera').addEventListener('click', triggerCamera);
         document.getElementById('cameraInput').addEventListener('change', handlePhotoCapture);
-        document.getElementById('btn-download').addEventListener('click', handleDownload);
-
 
         let currentLat = null;
         let currentLon = null;
-        let capturedFile = null;
+        let capturedFiles = []; // **อาร์เรย์สำหรับเก็บไฟล์ภาพทั้งหมด**
 
         /* --- 1. ฟังก์ชันโทร 191 --- */
         function confirmCall(event) {
@@ -156,65 +164,94 @@
                 window.location.href = "tel:191";
             }
         }
-        /* --- 2. ฟังก์ชันตำแหน่ง --- (โค้ดเดิม) */
-        function getLocation() { /* ... โค้ดเดิม ... */ }
-        function copyCoords() { /* ... โค้ดเดิม ... */ }
-        
-        /* --- 3. ฟังก์ชันกล้อง/รูปภาพ --- */
+
+        /* --- 2. ฟังก์ชันกล้อง/รูปภาพ (ถ่ายซ้ำและเก็บในอาร์เรย์) --- */
         function triggerCamera() {
-            // คลิก input type="file" ที่ถูกซ่อนไว้ เพื่อเปิดกล้อง
             document.getElementById('cameraInput').click();
         }
 
         function handlePhotoCapture(event) {
             const file = event.target.files[0];
-            const photoPreview = document.getElementById('photo-preview');
             const photoStatus = document.getElementById('photo-status');
+            const photoGallery = document.getElementById('photo-gallery');
             const btnDownload = document.getElementById('btn-download');
+            const fileCount = document.getElementById('file-count');
 
             if (file) {
-                capturedFile = file;
+                capturedFiles.push(file); // **เพิ่มไฟล์ใหม่เข้าไปในอาร์เรย์**
+                
                 const url = URL.createObjectURL(file);
-                
-                photoPreview.src = url;
-                photoPreview.style.display = 'block';
-                photoStatus.textContent = '✅ ถ่ายภาพสำเร็จแล้ว';
 
-                // เตรียมปุ่มดาวน์โหลด
+                // สร้างภาพย่อ (Thumbnail)
+                const img = document.createElement('img');
+                img.src = url;
+                img.classList.add('thumbnail');
+                img.alt = `ภาพที่ ${capturedFiles.length}`;
+
+                photoGallery.appendChild(img);
+
+                const count = capturedFiles.length;
+                photoStatus.textContent = `✅ ถ่ายภาพสำเร็จแล้ว (รวม ${count} ภาพ)`;
+                fileCount.textContent = count;
                 btnDownload.style.display = 'block';
-                
+
+                // **สำคัญ:** เคลียร์ค่า input เพื่อให้สามารถกดถ่ายซ้ำได้
+                event.target.value = null; 
             } else {
-                photoPreview.style.display = 'none';
-                btnDownload.style.display = 'none';
-                photoStatus.textContent = '❌ ยกเลิกการถ่ายภาพ';
-                capturedFile = null;
+                if (capturedFiles.length === 0) {
+                    photoStatus.textContent = '❌ ยกเลิกการถ่ายภาพ';
+                }
+                // ไม่ต้องทำอะไร หากกดยกเลิกกล้องแต่มีภาพเดิมอยู่แล้ว
             }
         }
 
         function handleDownload(event) {
-            if (capturedFile) {
-                // ใช้ URL.createObjectURL อีกครั้ง หรือใช้ตัวเดิมเพื่อสร้างลิงก์ดาวน์โหลด
-                const url = URL.createObjectURL(capturedFile);
-                event.currentTarget.href = url;
-                
-                // สร้างชื่อไฟล์ที่มีวันที่/เวลา เพื่อให้ไฟล์ไม่ซ้ำกัน
-                const now = new Date();
-                const filename = `Emergency_${now.getFullYear()}${now.getMonth()+1}${now.getDate()}_${now.getHours()}${now.getMinutes()}${now.getSeconds()}.jpg`;
-                event.currentTarget.setAttribute('download', filename);
+            event.preventDefault(); 
 
-                // เบราว์เซอร์จะจัดการการดาวน์โหลดเอง
-                alert('กำลังดาวน์โหลดภาพไปยังโฟลเดอร์ดาวน์โหลด (Downloads)');
-                // ไม่ต้องเรียก event.preventDefault(); เพราะต้องการให้ลิงก์ทำงาน
-            } else {
-                event.preventDefault(); // ป้องกันการดาวน์โหลดถ้าไม่มีไฟล์
+            if (capturedFiles.length === 0) {
                 alert('ไม่มีภาพให้ดาวน์โหลด! โปรดถ่ายภาพก่อน');
+                return false;
             }
+            
+            const confirmMsg = `คุณต้องการดาวน์โหลดภาพทั้งหมด ${capturedFiles.length} ไฟล์หรือไม่? (เบราว์เซอร์อาจขอให้คุณยืนยันการดาวน์โหลดหลายครั้ง)`;
+            if (!confirm(confirmMsg)) {
+                return false;
+            }
+
+            alert(`กำลังเริ่มดาวน์โหลด ${capturedFiles.length} ไฟล์...`);
+
+            // ใช้วิธีสร้างลิงก์ชั่วคราวเพื่อกระตุ้นการดาวน์โหลดทีละไฟล์
+            const tempLink = document.createElement('a');
+            document.body.appendChild(tempLink);
+            tempLink.style.display = 'none';
+
+            capturedFiles.forEach((file, index) => {
+                const url = URL.createObjectURL(file);
+                
+                // สร้างชื่อไฟล์ที่มี index และ timestamp เพื่อให้ไม่ซ้ำกัน
+                const now = new Date();
+                const timestamp = `${now.getFullYear()}${now.getMonth()+1}${now.getDate()}_${now.getHours()}${now.getMinutes()}${now.getSeconds()}`;
+                const filename = `Emergency_${timestamp}_${index + 1}.jpg`;
+                
+                tempLink.href = url;
+                tempLink.download = filename;
+                
+                // สั่งให้ลิงก์ทำงานเพื่อเริ่มดาวน์โหลด
+                tempLink.click(); 
+
+                // ทำความสะอาด URL object หลังจากดาวน์โหลดเสร็จสิ้น (เพื่อประหยัดหน่วยความจำ)
+                setTimeout(() => {
+                     URL.revokeObjectURL(url);
+                }, 100); 
+            });
+
+            document.body.removeChild(tempLink);
+            return false;
         }
 
 
         // *******************************************************************
-        // โค้ดเก่าที่จำเป็นต้องมีเพื่อให้ฟังก์ชันทำงานได้ครบถ้วน
-        // (ผมขอใช้ JavaScript Template String ในการรวมโค้ดให้สั้นลง แต่ฟังก์ชันการทำงานเหมือนเดิม)
+        // โค้ดส่วนตำแหน่ง (Geolocaton) - ไม่ได้แก้ไข
         // *******************************************************************
         
         function getLocation() {
