@@ -2,346 +2,325 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เครื่องมือฉุกเฉิน 3-in-1 (หลายภาพ)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SOS Emergency Tool Modern</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        /* --- Reset & Modern Base --- */
+        * {
+            box-sizing: border-box;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Prompt', sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #0b1e30;
-            color: #fff;
-            text-align: center;
-        }
-        .container {
-            max-width: 450px;
-            margin: 0 auto;
-            background-color: #1a3044;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-        }
-        h2 {
-            color: #ffeb3b;
-            margin-bottom: 25px;
+            padding: 0;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); /* พื้นหลังไล่สีสวยๆ */
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* --- ส่วนแสดงผลพิกัดใหญ่ --- */
-        .coord-display {
-            background-color: #0f273b;
-            padding: 15px 10px;
-            border-radius: 8px;
-            border: 2px solid #5d6d7e;
+        /* --- Main Container (Card Style) --- */
+        .container {
+            width: 100%;
+            max-width: 480px; /* ขนาดกำลังดีเหมือนแอป */
+            background-color: rgba(255, 255, 255, 0.95); /* สีขาวโปร่งแสงนิดๆ */
+            margin: 20px;
+            padding: 30px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            overflow: hidden; /* ป้องกันเนื้อหาล้น */
+        }
+
+        h2 {
+            color: #1e3c72;
+            margin: 0 0 20px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        /* --- Status Badge --- */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 50px;
+            background-color: #eee;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+        .status-active { background-color: #e8f5e9; color: #2e7d32; }
+        .status-error { background-color: #ffebee; color: #c62828; }
+
+        /* --- Coordinate Box --- */
+        .coords-wrapper {
+            display: flex;
+            gap: 10px;
             margin-bottom: 15px;
         }
-        .coord-label {
-            font-size: 14px;
-            color: #bbb;
-            display: block;
+        .coord-box {
+            flex: 1;
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #dbeafe;
         }
-        .coord-value {
-            font-size: 32px;
-            font-weight: bold;
-            color: #81c784;
-            display: block;
-            margin-top: 5px;
+        .coord-label { font-size: 12px; color: #64748b; display: block; margin-bottom: 5px; }
+        .coord-value { font-size: 18px; font-weight: 600; color: #1e3c72; }
+
+        /* --- Action Buttons (Modern) --- */
+        .btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: 'Prompt', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn:active { transform: scale(0.98); }
+        
+        .btn-locate { background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); color: white; }
+        .btn-map { background: #fff; color: #1e3c72; border: 2px solid #1e3c72; display: none; } /* ซ่อนก่อนจนกว่าจะเจอพิกัด */
+        .btn-copy { background: #25D366; color: white; display: none; } /* สีเขียว Line */
+        
+        .btn-camera { background: linear-gradient(to right, #8e2de2, #4a00e0); color: white; margin-top: 10px;}
+        .btn-call { 
+            background: linear-gradient(to right, #ff416c, #ff4b2b); 
+            color: white; 
+            font-size: 20px; 
+            padding: 18px;
+            margin-top: 20px;
+            box-shadow: 0 8px 15px rgba(255, 75, 43, 0.4);
         }
 
-        /* --- กล่องข้อความและรูปภาพ --- */
-        #police-message-box, #photo-preview-box {
-            margin-top: 25px;
+        /* --- Info Box --- */
+        .info-card {
+            background: #fff3cd;
+            color: #856404;
             padding: 15px;
-            border: 2px solid #F44336;
-            border-radius: 8px;
-            min-height: 50px;
-            text-align: center;
-            background-color: #2b1f24;
-            word-wrap: break-word;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            text-align: left;
+            margin: 15px 0;
+            border-left: 5px solid #ffc107;
+            display: none; /* ซ่อนก่อน */
         }
-        
+
+        /* --- Photo Gallery --- */
         #photo-gallery {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
             gap: 10px;
-            margin-top: 10px;
+            justify-content: center;
+            margin-top: 15px;
         }
         .thumbnail {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             object-fit: cover;
-            border-radius: 5px;
-            border: 2px solid #fff;
-        }
-        
-        /* --- ปุ่มหลัก (Buttons) --- */
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 15px 10px;
-            margin-bottom: 15px;
-            border: none;
             border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-            transition: background-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        #btn-locate { background-color: #4CAF50; color: white; margin-top: 15px; }
-        #btn-camera { background-color: #9c27b0; color: white; } /* ปุ่มกล้องสีม่วง */
-        #btn-call { background-color: #F44336; color: white; font-size: 24px; padding: 20px 10px; }
-        #btn-copy { background-color: #2196F3; color: white; font-size: 16px; padding: 10px; }
-        #btn-download { background-color: #00bcd4; color: white; display: none; margin-top: 10px; font-size: 18px; padding: 15px; }
-        
-        .status-text { color: #ffeb3b; margin-bottom: 15px; display: block; }
+        .btn-download {
+            background: #607d8b;
+            color: white;
+            font-size: 14px;
+            padding: 10px;
+            display: none;
+        }
+
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h2>🚨 เครื่องมือฉุกเฉิน 3-in-1</h2>
+        <h2>🚨 แจ้งเหตุด่วน (SOS)</h2>
         
-        <span id="status-display" class="status-text">สถานะ: กดค้นหาตำแหน่งเพื่อเริ่ม</span>
+        <span id="status-display" class="status-badge">รอคำสั่งค้นหา...</span>
 
-        <div class="coord-display">
-            <span class="coord-label">ละติจูด (Latitude)</span>
-            <span id="lat-value" class="coord-value">--.------</span>
-        </div>
-        <div class="coord-display">
-            <span class="coord-label">ลองจิจูด (Longitude)</span>
-            <span id="lon-value" class="coord-value">--.------</span>
+        <div class="coords-wrapper">
+            <div class="coord-box">
+                <span class="coord-label">LATITUDE</span>
+                <span id="lat-value" class="coord-value">-</span>
+            </div>
+            <div class="coord-box">
+                <span class="coord-label">LONGITUDE</span>
+                <span id="lon-value" class="coord-value">-</span>
+            </div>
         </div>
 
-        <button id="btn-copy" class="btn">
-            📋 คัดลอกพิกัดสำหรับแจ้งตำรวจ
+        <button id="btn-locate" class="btn btn-locate">
+            📍 ค้นหาตำแหน่ง & สร้างลิงก์
         </button>
 
-        <div id="police-message-box">
-             <span class="police-message-text">ข้อความสำหรับแจ้ง 191:</span>
-             <p id="address-detail">รอการค้นหาตำแหน่ง...</p>
-        </div>
-
-        <button id="btn-locate" class="btn">
-            📍 ค้นหาตำแหน่งปัจจุบัน
+        <a id="btn-open-map" href="#" target="_blank" class="btn btn-map">
+            🗺️ เปิดดูจุดนี้ใน Google Maps
+        </a>
+        <button id="btn-copy" class="btn btn-copy">
+            🔗 คัดลอกลิงก์แผนที่ (ส่ง Line/แชท)
         </button>
 
-        <button id="btn-camera" class="btn">
-            📸 ถ่ายรูปประกอบเหตุการณ์ (กดซ้ำเพื่อเพิ่มภาพ)
+        <div id="address-box" class="info-card">
+            <strong>ที่อยู่โดยประมาณ:</strong> <span id="address-text">...</span>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        <button id="btn-camera" class="btn btn-camera">
+            📸 ถ่ายรูปหลักฐาน
         </button>
         <input type="file" id="cameraInput" accept="image/*" capture="camera" style="display: none;">
         
-        <div id="photo-preview-box">
-             <span id="photo-status">ยังไม่มีภาพถ่าย</span>
-             <div id="photo-gallery"></div> 
-
-             <a id="btn-download" class="btn" href="#" style="display: none;" onclick="return handleDownload(event)">
-                 ⬇️ ดาวน์โหลดภาพทั้งหมด (<span id="file-count">0</span> ไฟล์)
-             </a>
+        <div id="photo-area">
+            <div id="photo-gallery"></div>
+            <a id="btn-download" class="btn btn-download" href="#" onclick="return handleDownload(event)">
+                ⬇️ โหลดรูปทั้งหมด (<span id="file-count">0</span>)
+            </a>
         </div>
-        <a id="btn-call" class="btn" href="#" onclick="return confirmCall(event)">
+
+        <a id="btn-call" class="btn btn-call" href="#" onclick="return confirmCall(event)">
             📞 โทร 191 ทันที
         </a>
-
     </div>
 
     <script>
-        document.getElementById('btn-locate').addEventListener('click', getLocation);
-        document.getElementById('btn-copy').addEventListener('click', copyCoords);
-        document.getElementById('btn-camera').addEventListener('click', triggerCamera);
-        document.getElementById('cameraInput').addEventListener('change', handlePhotoCapture);
-
+        // Elements
+        const btnLocate = document.getElementById('btn-locate');
+        const btnCopy = document.getElementById('btn-copy');
+        const btnOpenMap = document.getElementById('btn-open-map');
+        const btnCamera = document.getElementById('btn-camera');
+        const cameraInput = document.getElementById('cameraInput');
+        
         let currentLat = null;
         let currentLon = null;
-        let capturedFiles = []; // **อาร์เรย์สำหรับเก็บไฟล์ภาพทั้งหมด**
+        let googleMapsLink = "";
+        let capturedFiles = [];
 
-        /* --- 1. ฟังก์ชันโทร 191 --- */
-        function confirmCall(event) {
-            event.preventDefault(); 
-            const confirmed = confirm("คุณแน่ใจหรือไม่ว่าต้องการโทร 191 เพื่อแจ้งเหตุด่วนฉุกเฉิน? (เฉพาะเหตุจริงเท่านั้น)");
-            if (confirmed) {
-                window.location.href = "tel:191";
-            }
-        }
-
-        /* --- 2. ฟังก์ชันกล้อง/รูปภาพ (ถ่ายซ้ำและเก็บในอาร์เรย์) --- */
-        function triggerCamera() {
-            document.getElementById('cameraInput').click();
-        }
-
-        function handlePhotoCapture(event) {
-            const file = event.target.files[0];
-            const photoStatus = document.getElementById('photo-status');
-            const photoGallery = document.getElementById('photo-gallery');
-            const btnDownload = document.getElementById('btn-download');
-            const fileCount = document.getElementById('file-count');
-
-            if (file) {
-                capturedFiles.push(file); // **เพิ่มไฟล์ใหม่เข้าไปในอาร์เรย์**
-                
-                const url = URL.createObjectURL(file);
-
-                // สร้างภาพย่อ (Thumbnail)
-                const img = document.createElement('img');
-                img.src = url;
-                img.classList.add('thumbnail');
-                img.alt = `ภาพที่ ${capturedFiles.length}`;
-
-                photoGallery.appendChild(img);
-
-                const count = capturedFiles.length;
-                photoStatus.textContent = `✅ ถ่ายภาพสำเร็จแล้ว (รวม ${count} ภาพ)`;
-                fileCount.textContent = count;
-                btnDownload.style.display = 'block';
-
-                // **สำคัญ:** เคลียร์ค่า input เพื่อให้สามารถกดถ่ายซ้ำได้
-                event.target.value = null; 
-            } else {
-                if (capturedFiles.length === 0) {
-                    photoStatus.textContent = '❌ ยกเลิกการถ่ายภาพ';
-                }
-                // ไม่ต้องทำอะไร หากกดยกเลิกกล้องแต่มีภาพเดิมอยู่แล้ว
-            }
-        }
-
-        function handleDownload(event) {
-            event.preventDefault(); 
-
-            if (capturedFiles.length === 0) {
-                alert('ไม่มีภาพให้ดาวน์โหลด! โปรดถ่ายภาพก่อน');
-                return false;
-            }
-            
-            const confirmMsg = `คุณต้องการดาวน์โหลดภาพทั้งหมด ${capturedFiles.length} ไฟล์หรือไม่? (เบราว์เซอร์อาจขอให้คุณยืนยันการดาวน์โหลดหลายครั้ง)`;
-            if (!confirm(confirmMsg)) {
-                return false;
-            }
-
-            alert(`กำลังเริ่มดาวน์โหลด ${capturedFiles.length} ไฟล์...`);
-
-            // ใช้วิธีสร้างลิงก์ชั่วคราวเพื่อกระตุ้นการดาวน์โหลดทีละไฟล์
-            const tempLink = document.createElement('a');
-            document.body.appendChild(tempLink);
-            tempLink.style.display = 'none';
-
-            capturedFiles.forEach((file, index) => {
-                const url = URL.createObjectURL(file);
-                
-                // สร้างชื่อไฟล์ที่มี index และ timestamp เพื่อให้ไม่ซ้ำกัน
-                const now = new Date();
-                const timestamp = `${now.getFullYear()}${now.getMonth()+1}${now.getDate()}_${now.getHours()}${now.getMinutes()}${now.getSeconds()}`;
-                const filename = `Emergency_${timestamp}_${index + 1}.jpg`;
-                
-                tempLink.href = url;
-                tempLink.download = filename;
-                
-                // สั่งให้ลิงก์ทำงานเพื่อเริ่มดาวน์โหลด
-                tempLink.click(); 
-
-                // ทำความสะอาด URL object หลังจากดาวน์โหลดเสร็จสิ้น (เพื่อประหยัดหน่วยความจำ)
-                setTimeout(() => {
-                     URL.revokeObjectURL(url);
-                }, 100); 
-            });
-
-            document.body.removeChild(tempLink);
-            return false;
-        }
-
-
-        // *******************************************************************
-        // โค้ดส่วนตำแหน่ง (Geolocaton) - ไม่ได้แก้ไข
-        // *******************************************************************
-        
-        function getLocation() {
+        // 1. Locate Function
+        btnLocate.addEventListener('click', () => {
             const statusDisplay = document.getElementById('status-display');
-            const latValue = document.getElementById('lat-value');
-            const lonValue = document.getElementById('lon-value');
-            const addressDetail = document.getElementById('address-detail');
-            
-            statusDisplay.textContent = 'กำลังค้นหาตำแหน่ง... โปรดอนุญาตการเข้าถึง';
-            latValue.textContent = '--.------';
-            lonValue.textContent = '--.------';
-            addressDetail.textContent = 'กำลังแปลงพิกัดเป็นที่อยู่...';
+            const latDisplay = document.getElementById('lat-value');
+            const lonDisplay = document.getElementById('lon-value');
+            const addressBox = document.getElementById('address-box');
+
+            statusDisplay.textContent = "🛰️ กำลังดึงสัญญาณดาวเทียม...";
+            statusDisplay.className = "status-badge";
 
             if (!navigator.geolocation) {
-                statusDisplay.textContent = '❌ เบราว์เซอร์ไม่รองรับ Geolocation';
+                alert("เบราว์เซอร์ไม่รองรับ GPS");
                 return;
             }
 
-            navigator.geolocation.getCurrentPosition(success, error, {
-                enableHighAccuracy: true,
-                timeout: 15000,
-                maximumAge: 0
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // Success
+                    currentLat = position.coords.latitude.toFixed(6);
+                    currentLon = position.coords.longitude.toFixed(6);
+                    
+                    // Update UI
+                    latDisplay.textContent = currentLat;
+                    lonDisplay.textContent = currentLon;
+                    statusDisplay.textContent = "✅ ระบุตำแหน่งสำเร็จ";
+                    statusDisplay.className = "status-badge status-active";
+
+                    // Generate Google Maps Link
+                    googleMapsLink = `https://maps.google.com/?q=${currentLat},${currentLon}`;
+                    
+                    // Show Buttons
+                    btnOpenMap.href = googleMapsLink;
+                    btnOpenMap.style.display = 'flex';
+                    btnCopy.style.display = 'flex';
+                    btnLocate.style.display = 'none'; // ซ่อนปุ่มค้นหาเพื่อให้หน้าจอไม่รก
+
+                    // Reverse Geocode (หาชื่อถนน)
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLat}&lon=${currentLon}&accept-language=th`)
+                        .then(res => res.json())
+                        .then(data => {
+                            addressBox.style.display = 'block';
+                            document.getElementById('address-text').textContent = data.display_name || "ไม่พบชื่อถนน";
+                        });
+                },
+                (error) => {
+                    statusDisplay.textContent = "❌ ไม่สามารถระบุตำแหน่งได้";
+                    statusDisplay.className = "status-badge status-error";
+                    alert("กรุณาเปิด GPS และกดอนุญาตการเข้าถึง");
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        });
+
+        // 2. Copy Link Function
+        btnCopy.addEventListener('click', () => {
+            if (!googleMapsLink) return;
+            
+            // คัดลอกลิงก์ Google Maps
+            navigator.clipboard.writeText(googleMapsLink).then(() => {
+                const originalText = btnCopy.textContent;
+                btnCopy.textContent = "✅ คัดลอกลิงก์แล้ว!";
+                btnCopy.style.background = "#333";
+                setTimeout(() => {
+                    btnCopy.textContent = originalText;
+                    btnCopy.style.background = "#25D366";
+                }, 2000);
+            }).catch(err => {
+                prompt("ก๊อปปี้ลิงก์ด้านล่าง:", googleMapsLink);
             });
+        });
 
-            function success(position) {
-                currentLat = position.coords.latitude.toFixed(6);
-                currentLon = position.coords.longitude.toFixed(6);
-                
-                statusDisplay.textContent = '✅ พบตำแหน่งแล้ว';
-                latValue.textContent = currentLat;
-                lonValue.textContent = currentLon;
-                
-                // OpenStreetMap Geocoding
-                const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLat}&lon=${currentLon}&zoom=18&addressdetails=1&accept-language=th`;
-                
-                fetch(reverseGeocodeUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        let addressText = "ไม่พบข้อมูลที่อยู่โดยละเอียด";
-                        if (data && data.display_name) {
-                            addressText = data.display_name;
-                        }
-                        
-                        addressDetail.innerHTML = `
-                            **ที่อยู่โดยประมาณ:** ${addressText}<br>
-                            **ข้อความสำหรับแจ้ง 191:** "ตอนนี้ดิฉัน/ผม อยู่ที่ **${addressText}** พิกัดคือ **Lat: ${currentLat}, Lon: ${currentLon}** ค่ะ/ครับ"
-                        `;
-                    })
-                    .catch(e => {
-                        addressDetail.innerHTML = `
-                            **ที่อยู่โดยประมาณ:** (ไม่สามารถระบุได้ชัดเจน)<br>
-                            **ข้อความสำหรับแจ้ง 191:** "ตอนนี้ดิฉัน/ผม ไม่สามารถระบุที่อยู่ชัดเจนได้ กรุณาบันทึกพิกัดค่ะ/ครับ: **Lat: ${currentLat}, Lon: ${currentLon}**"
-                        `;
-                    });
-            }
-
-            function error(err) {
-                let errorMessage = '';
-                if (err.code === err.PERMISSION_DENIED) {
-                    errorMessage = "คุณไม่ได้อนุญาตให้เข้าถึงตำแหน่ง";
-                } else if (err.code === err.POSITION_UNAVAILABLE) {
-                    errorMessage = "ตำแหน่งปัจจุบันไม่พร้อมใช้งาน";
-                } else if (err.code === err.TIMEOUT) {
-                    errorMessage = "การค้นหาตำแหน่งหมดเวลา";
-                } else {
-                    errorMessage = `ข้อผิดพลาดที่ไม่ทราบสาเหตุ (${err.message})`;
-                }
-                
-                statusDisplay.textContent = `🚫 ข้อผิดพลาด: ${errorMessage}`;
-                addressDetail.textContent = 'กรุณาลองกดปุ่มค้นหาตำแหน่งใหม่อีกครั้ง';
-            }
-        }
+        // 3. Camera Functions
+        btnCamera.addEventListener('click', () => cameraInput.click());
         
-        function copyCoords() {
-            if (currentLat && currentLon) {
-                const textToCopy = `พิกัด: Lat ${currentLat}, Lon ${currentLon}`;
+        cameraInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                const file = e.target.files[0];
+                capturedFiles.push(file);
                 
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(textToCopy).then(() => {
-                        alert(`📋 คัดลอกพิกัดแล้ว: ${textToCopy}`);
-                    }).catch(err => {
-                        window.prompt("ไม่สามารถคัดลอกอัตโนมัติได้ กรุณาคัดลอกข้อความด้านล่าง:", textToCopy);
-                    });
-                } else {
-                    window.prompt("เบราว์เซอร์ไม่รองรับการคัดลอกอัตโนมัติ กรุณาคัดลอกข้อความด้านล่าง:", textToCopy);
-                }
-            } else {
-                alert('โปรดกด "📍 ค้นหาตำแหน่งปัจจุบัน" ก่อน');
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.className = 'thumbnail';
+                document.getElementById('photo-gallery').appendChild(img);
+                
+                document.getElementById('btn-download').style.display = 'flex';
+                document.getElementById('file-count').textContent = capturedFiles.length;
+                e.target.value = null; // Reset input
             }
+        });
+
+        function handleDownload(e) {
+            e.preventDefault();
+            if(capturedFiles.length === 0) return;
+            if(!confirm("ดาวน์โหลดรูปทั้งหมด?")) return;
+
+            const tempLink = document.createElement('a');
+            capturedFiles.forEach((file, i) => {
+                const url = URL.createObjectURL(file);
+                tempLink.href = url;
+                tempLink.download = `SOS_Img_${i+1}.jpg`;
+                tempLink.click();
+            });
         }
+
+        // 4. Call Function
+        function confirmCall(e) {
+            e.preventDefault();
+            if(confirm("ยืนยันโทร 191?")) window.location.href = "tel:191";
+        }
+
     </script>
 </body>
 </html>
